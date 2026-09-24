@@ -74,7 +74,7 @@ BOARD_KERNEL_BASE := 0x00000000
 BOARD_KERNEL_PAGESIZE := 4096
 BOARD_MKBOOTIMG_ARGS := \
 	--dtb $(TARGET_PREBUILT_DTB) \
-	--board SRPWD25B001 \
+	--board SRPWD25B009 \
 	--ramdisk_offset 0x02000000 \
 	--kernel_offset 0x00008000 \
 	--second_offset 0x00000000 \
