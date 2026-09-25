@@ -1,0 +1,16 @@
+focaltech_tp.ko: sec_cmd.ko sec_class.ko msm_drm.ko v4l2-mem2mem.ko msm_dma_iommu_mapping.ko ocp2138.ko wt_chg.ko hardware_info.ko clk-qcom.ko proxy-consumer.ko spmi-pmic-arb.ko _qcom_scm.ko
+_qcom_scm.ko: 
+clk-qcom.ko: proxy-consumer.ko
+proxy-consumer.ko: 
+msm_dma_iommu_mapping.ko: 
+jadard_touch.ko: sec_cmd.ko sec_class.ko msm_drm.ko v4l2-mem2mem.ko msm_dma_iommu_mapping.ko ocp2138.ko wt_chg.ko hardware_info.ko clk-qcom.ko proxy-consumer.ko spmi-pmic-arb.ko _qcom_scm.ko
+sec_cmd.ko: sec_class.ko
+icnl9951r.ko: sec_cmd.ko sec_class.ko msm_drm.ko v4l2-mem2mem.ko msm_dma_iommu_mapping.ko ocp2138.ko wt_chg.ko hardware_info.ko clk-qcom.ko proxy-consumer.ko spmi-pmic-arb.ko _qcom_scm.ko
+v4l2-mem2mem.ko: 
+himax_mmi.ko: sec_cmd.ko sec_class.ko msm_drm.ko v4l2-mem2mem.ko msm_dma_iommu_mapping.ko ocp2138.ko wt_chg.ko hardware_info.ko clk-qcom.ko proxy-consumer.ko spmi-pmic-arb.ko _qcom_scm.ko
+sec_class.ko: 
+ocp2138.ko: 
+msm_drm.ko: v4l2-mem2mem.ko msm_dma_iommu_mapping.ko ocp2138.ko wt_chg.ko hardware_info.ko clk-qcom.ko proxy-consumer.ko spmi-pmic-arb.ko _qcom_scm.ko
+hardware_info.ko: 
+wt_chg.ko: 
+spmi-pmic-arb.ko: 

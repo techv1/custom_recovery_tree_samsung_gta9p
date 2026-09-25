@@ -1,0 +1,24 @@
+# Aliases extracted from modules themselves.
+alias of:N*T*Cfocaltech,fts focaltech_tp
+alias of:N*T*Cfocaltech,ftsC* focaltech_tp
+alias of:N*T*Cqcom,tee-shared-memory-bridge _qcom_scm
+alias of:N*T*Cqcom,tee-shared-memory-bridgeC* _qcom_scm
+alias of:N*T*Cchipone-tddi icnl9951r
+alias of:N*T*Cchipone-tddiC* icnl9951r
+alias of:N*T*Cqcom,mdp4 msm_drm
+alias of:N*T*Cqcom,mdp4C* msm_drm
+alias of:N*T*Cqcom,mdss msm_drm
+alias of:N*T*Cqcom,mdssC* msm_drm
+alias of:N*T*Cqcom,sde-kms msm_drm
+alias of:N*T*Cqcom,sde-kmsC* msm_drm
+alias of:N*T*Cqcom,smmu_sde_unsec msm_drm
+alias of:N*T*Cqcom,smmu_sde_unsecC* msm_drm
+alias of:N*T*Cqcom,smmu_sde_sec msm_drm
+alias of:N*T*Cqcom,smmu_sde_secC* msm_drm
+alias of:N*T*Cqcom,smmu_sde_nrt_unsec msm_drm
+alias of:N*T*Cqcom,smmu_sde_nrt_unsecC* msm_drm
+alias of:N*T*Cqcom,smmu_sde_nrt_sec msm_drm
+alias of:N*T*Cqcom,smmu_sde_nrt_secC* msm_drm
+alias platform:spmi_pmic_arb spmi_pmic_arb
+alias of:N*T*Cqcom,spmi-pmic-arb spmi_pmic_arb
+alias of:N*T*Cqcom,spmi-pmic-arbC* spmi_pmic_arb

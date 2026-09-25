@@ -62,3 +62,6 @@ PRODUCT_COPY_FILES += $(call find-copy-subdir-files,*.ko,$(LOCAL_PATH)/prebuilt/
 
 # Copy modules for depmod
 PRODUCT_COPY_FILES += $(call find-copy-subdir-files,*.ko,$(LOCAL_PATH)/prebuilt/modules/5.4-gki,$(TARGET_COPY_OUT_RECOVERY)/root/vendor/lib/modules/5.4-gki)
+
+# Copy module metadata (modules.dep, modules.alias, modules.softdep, modules.load)
+PRODUCT_COPY_FILES += $(call find-copy-subdir-files,modules.*,$(LOCAL_PATH)/prebuilt/modules,$(TARGET_COPY_OUT_RECOVERY)/root/vendor/lib/modules)
