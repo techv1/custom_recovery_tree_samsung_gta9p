@@ -1,26 +1,21 @@
-name: TWRP
+name: TWRP Builder for SM-X216B (gta9p)
 
 on:
   push:
     branches:
-      - 'twrp-12.1'
-
-    paths:
-      - 'version.mk'
+      - 'dyj7-prototype-01'
+      - 'main'
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build TWRP by ${{ github.actor }}
-    runs-on: ubuntu-20.04
-    if: github.event.repository.owner.id == github.event.sender.id
+    name: Build TWRP for SM-X216B
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
-    - name: Check Out
+    - name: Check Out Repository
       uses: actions/checkout@v4
-
-    - name: Cleanup
-      uses: rokibhasansagar/slimhub_actions@main
 
     - name: Set Swap Space
       uses: pierotofy/set-swap-space@master
@@ -30,89 +25,54 @@ jobs:
     - name: Setup ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
-        max-size: "10G"
+        max-size: "12G"
 
-    - name: Prepare the environment
+    - name: Prepare Ubuntu 24.04 Build Environment
       run: |
         sudo apt update
         sudo apt -y upgrade
-        sudo apt -y install gperf gcc-multilib gcc-10-multilib g++-multilib g++-10-multilib libc6-dev lib32ncurses5-dev x11proto-core-dev libx11-dev tree lib32z-dev libgl1-mesa-dev libxml2-utils xsltproc bc ccache lib32readline-dev lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libwxgtk3.0-gtk3-dev libxml2 lzop pngcrush schedtool squashfs-tools imagemagick libbz2-dev lzma ncftp qemu-user-static libstdc++-10-dev libtinfo5 libgflags-dev
-        sudo add-apt-repository universe
-        sudo apt -y install libncurses5
-
-    - name: Install OpenJDK
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '8'
-
-    - name: Install Git-Repo
-      run: |
-        mkdir ~/bin
-        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+        sudo apt -y install bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf imagemagick lib32readline-dev lib32z1-dev libelf-dev liblz4-tool libncurses-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python3 python3-pip openjdk-11-jdk libtinfo6
+        
+        # Install repo tool
+        mkdir -p ~/bin
+        curl -s https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
         chmod a+x ~/bin/repo
         sudo ln -sf ~/bin/repo /usr/bin/repo
 
-    - name: Initialize Repo
+    - name: Initialize TWRP Manifest
       run: |
-        mkdir twrp
+        mkdir -p twrp
         cd twrp
-        git config --global user.name "Carlo Dee"
-        git config --global user.email "carlodee.official@proton.me"
+        git config --global user.name "techv1"
+        git config --global user.email "builder@techv1.local"
         repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b twrp-12.1
-        repo sync -j$(nproc --all) --force-sync
+        repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
-    - name: Clone Device Tree
+    - name: Integrate GTA9P Device Tree
       run: |
-        cd twrp
-        git clone https://github.com/cd-Crypton/custom_recovery_tree_samsung_gta9p.git -b twrp-12.1 ./device/samsung/gta9p
-        cd device/samsung/gta9p
-        echo "COMMIT_ID=$(git rev-parse HEAD)" >> $GITHUB_ENV
-        echo "VERSION=$(cat version.mk | grep '^TW_DEVICE_VERSION' | awk '{print $3}')" >> $GITHUB_ENV
-        echo "COMMIT_ID2=$(git log --pretty=format:"%H" --grep="Unofficial build release" | sed -n '2p')" >> $GITHUB_ENV
-
-    - name: Building Image
-      run: |
+        # Copy current workspace into device path
+        mkdir -p twrp/device/samsung/gta9p
+        rsync -av --exclude='.git' --exclude='twrp' ./ twrp/device/samsung/gta9p/
         echo "BUILD_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
+        echo "COMMIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+    - name: Building Recovery Image
+      run: |
         cd twrp
         export USE_CCACHE=1
         export CCACHE_EXEC=/usr/bin/ccache
-        sed -i 's/return sandboxConfig\.working/return false/g' build/soong/ui/build/sandbox_linux.go
-        source build/envsetup.sh
         export ALLOW_MISSING_DEPENDENCIES=true
-        lunch twrp_gta9p-eng && make clean && mka recoveryimage
-        echo "Done building your recovery.img"
-        cd out/target/product/gta9p
-        echo "Creating tar archive for ODIN flashing..."
-        tar -cvf recovery.tar recovery.img
-        echo "Done, download it and flash."
-        
+        source build/envsetup.sh
+        lunch twrp_gta9p-eng
+        mka recoveryimage
 
-    - name: Set Body
+    - name: Package Odin Tar
       run: |
-        echo -e \
-        "
-        ## Unofficial Build for Samsung Galaxy Tab A9+ 5G - SM-X216B (gta9p)
-        _Note: Flash at your own risk. This build were still in the process of testing._
-        ### Resources
-        * [TWRP Manifest](https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp/tree/twrp-12.1)
-        * [Device Tree](https://github.com/cd-Crypton/custom_recovery_tree_samsung_gta9p/tree/twrp-12.1)
-        
-        Build Device: gta9p
-        Build Date: ${{ env.BUILD_DATE }}
-        Build Release: Unofficial Beta
-        Build Branch: 12.1 (v3.7.1)
-        Compatibility: Android 12+
-        Custom Version: ${{ env.VERSION }}
-        
-        ### What's new?
-        * To be edited...
-        * [Full Changelog](https://github.com/cd-Crypton/custom_recovery_tree_samsung_gta9p/compare/${{ env.COMMIT_ID2 }}...${{ env.COMMIT_ID }})
-
-        ### Trigger Event
-        _This build were compiled by triggering branch twrp-12.1 of current tree, triggered by a push event in [version makefile](https://github.com/cd-Crypton/custom_recovery_tree_samsung_gta9p/blob/twrp-12.1/version.mk)._
-        * [Last Commit](https://github.com/cd-Crypton/custom_recovery_tree_samsung_gta9p/commit/${{ env.COMMIT_ID }})
-        " > changelog.txt
+        cd twrp/out/target/product/gta9p
+        echo "Creating Odin flashable recovery.tar..."
+        tar -cvf recovery.tar recovery.img
+        sha256sum recovery.img recovery.tar > sha256sums.txt
+        ls -la recovery.img recovery.tar
 
     - name: Upload to Release
       uses: softprops/action-gh-release@v2
@@ -120,6 +80,14 @@ jobs:
         files: |
           twrp/out/target/product/gta9p/recovery.img
           twrp/out/target/product/gta9p/recovery.tar
-        name: TWRP Release Build for Samsung Galaxy Tab A9+ 5G - SM-X216B (gta9p) // ${{ env.BUILD_DATE }}
-        tag_name: ${{ github.run_id }}
-        body_path: changelog.txt
+          twrp/out/target/product/gta9p/sha256sums.txt
+        name: TWRP Unofficial DYJ7 Build - SM-X216B // ${{ env.BUILD_DATE }} (${{ env.COMMIT_SHA }})
+        tag_name: build-${{ github.run_id }}
+        body: |
+          ## TWRP Recovery for Samsung Galaxy Tab A9+ 5G (SM-X216B / gta9p)
+          - **Target Firmware:** X216BXXS9DYJ7 (Android 15)
+          - **Kernel:** Stock 5.4.249-qgki-31053672-abX216BXXS9DYJ7
+          - **DTBO:** Stock DYJ7 recovery DTBO (`himax_ts@2` with starry, lide, starry_agc panels)
+          - **Touchscreen Driver:** Modular `himax_mmi.ko` + full prerequisite closure
+          - **Himax Firmwares:** Full set included (including starry_agc)
+          - **Commit:** ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
